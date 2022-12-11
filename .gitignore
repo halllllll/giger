@@ -1,0 +1,7 @@
+.env
+secret.json
+.vscode
+.DS_Store
+*.csv
+*.log
+.txt

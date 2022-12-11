@@ -1,0 +1,68 @@
+version: "3.9"
+
+volumes:
+  db-data:
+    driver: local
+  metabase-data:
+    driver: local
+  apps-share-data:
+    driver: local
+
+services:
+  go_lget:
+    container_name: giger-lget
+    build:
+      context: .
+      dockerfile: "./docker/golang/Dockerfile"
+    volumes:
+      - "./go_apps/lget/:/go/src/app"
+      - "apps-share-data:/go/src/app/csvs"
+    working_dir: /go/src/app
+    depends_on:
+      - db
+    tty: true
+    stdin_open: true
+  go_csv_db:
+    container_name: giger-csv-db
+    build:
+      context: .
+      dockerfile: "./docker/golang/Dockerfile"
+    volumes:
+      - "./go_apps/csv_db/:/go/src/app"
+      - "apps-share-data:/go/src/app/sharedCsvs"
+    working_dir: /go/src/app
+    depends_on:
+      - db
+    tty: true
+    stdin_open: true
+
+  metabase:
+    image: metabase/metabase
+    container_name: "giger-metabase"
+    volumes:
+      - "metabase-data:/metabase-data"
+    # environment:
+    #   # MB_DB_FILE: /metabase-data/metabase.db
+    #   MB_DB_TYPE: postgres
+    #   MB_DB_DBNAME: metabase
+    #   MB_DB_PORT: 5432
+    #   MB_DB_USER: postgres
+    #   # MB_DB_PASS: metabase
+    #   MB_DB_PASS: postgres
+    #   # MB_DB_HOST: db
+    ports:
+      - "4649:3000"
+    depends_on:
+      - db
+    platform: linux/amd64
+    
+  db:
+    image: postgres:15-alpine
+    container_name: "giger-postgres"
+    ports:
+      - "5432:5432"
+    env_file:
+      - "./docker/postgres/.env"
+    volumes:
+      - "db-data:/var/lib/postgresql/data"
+      - "./docker/postgres/init:/docker-entrypoint-initdb.d"
