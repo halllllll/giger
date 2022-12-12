@@ -1,15 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"io"
-	"io/fs"
 	"log"
-	"os"
 	"path/filepath"
-	"time"
+	"strings"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/halllllll/golog"
+	"github.com/jackc/pgx/v4"
+	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 var (
@@ -17,37 +18,28 @@ var (
 	watchFolderName string = "sharedCsvs"
 )
 
-func initFolder(folder string, mode fs.FileMode) error {
-	_, err := os.Stat(folder)
-	if err != nil {
-		if os.IsNotExist(err) {
-			if err := os.Mkdir(folder, mode); err != nil {
-				return err
-			}
-		} else {
-			if err := os.Chmod(folder, mode); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
+type csvType string
 
-func init() {
-	loc, err := time.LoadLocation("Asia/Tokyo")
-	if err != nil {
-		panic(err)
-	}
-	time.Local = loc
-	if err := initFolder(saveFolderName, 0777); err != nil {
-		panic(err)
-	}
-	if err = initFolder(watchFolderName, 0777); err != nil {
-		panic(err)
-	}
-}
+const (
+	ACTIONLOG csvType = "useractionlog"
+	USERS     csvType = "users"
+)
 
 func watch(targetPath string) error {
+	_ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	conn, err := pgx.Connect(context.Background(), fmt.Sprintf("postgres://%s:%s@%s:%s/%s", dbEnv.DbUser, dbEnv.DbPw, dbEnv.Host, dbEnv.DbPort, dbEnv.DbName))
+	if err != nil {
+		panic(err)
+	}
+
+	_txn, err := conn.Begin(_ctx)
+	if err != nil {
+		panic(err)
+	}
+	txn = &_txn
+	ctx = &_ctx
+
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return err
@@ -57,21 +49,52 @@ func watch(targetPath string) error {
 	if err != nil {
 		return err
 	}
-
 	// Start listening for events.
 	for {
 		select {
 		case event, ok := <-watcher.Events:
 			if !ok {
-				log.Println("event error")
+				golog.ErrLog.Println("event error")
 				continue
 			}
 			log.Println("event:", event)
 			if event.Has(fsnotify.Create) {
-				log.Println("modified file:", event.Name)
+				golog.InfoLog.Println("modified file:", event.Name)
+				// ファイル名で分ける
+				_, fileName := filepath.Split(event.Name)
+				kindOfFile := strings.Split(fileName, "_")[0]
+				switch csvType(kindOfFile) {
+				case ACTIONLOG:
+					fmt.Printf("get action log csv, ここでDBに保存\n")
 
-				outFileName := fmt.Sprintf("output_%s.txt", time.Now().Format("2006_01_02_150405_.000000000"))
-				outFilePath := filepath.Join(saveFolderName, outFileName)
+					rows, err := readActionLogCsv(event.Name)
+					if err != nil {
+						golog.ErrLog.Println(err)
+					}
+					if err := pourActionLog(rows, *txn, *ctx, string(LGATE_ACTIONLOG_TABLE)); err != nil {
+						golog.ErrLog.Println(err)
+					}
+					// なぜか上記が失敗するのでここで直接やってみる
+					// golog.InfoLog.Printf("here is ActionLog Method!!!!!! table name: %s\n", string(LGATE_ACTIONLOG_TABLE))
+					// _, err = txn.CopyFrom(ctx, pgx.Identifier{string(LGATE_ACTIONLOG_TABLE)}, []string{"created_at", "lgate_action", "user_name", "family_name", "given_name", "school_class_name", "school_name", "remote_address", "content_name"}, pgx.CopyFromRows(rows))
+
+					if err != nil {
+						err := fmt.Errorf("actin log csv pouring db error: %w", err)
+						return err
+					}
+					if err := _txn.Commit(*ctx); err != nil {
+						err := fmt.Errorf("transaction error: %w", err)
+						return err
+					}
+					return nil
+
+				case USERS:
+					fmt.Printf("get user csv, DBに保存\n")
+				default:
+					golog.InfoLog.Printf("UNKNOWN KIND OF FILE NAME: %s\n", kindOfFile)
+				}
+
+				outFilePath := filepath.Join(saveFolderName, event.Name)
 				fmt.Printf("save path: %s\n", outFilePath)
 				if err := moveFile(event.Name, outFilePath); err != nil {
 					log.Println("error: ", err)
@@ -79,9 +102,9 @@ func watch(targetPath string) error {
 			}
 		case err, ok := <-watcher.Errors:
 			if !ok {
+				golog.ErrLog.Println("error:", err)
 				return err
 			}
-			log.Println("error:", err)
 		}
 	}
 
@@ -90,24 +113,8 @@ func watch(targetPath string) error {
 
 func main() {
 	fmt.Println("監視開始")
+
 	if err := watch(watchFolderName); err != nil {
 		panic(err)
 	}
-}
-
-func moveFile(in string, out string) error {
-	src, err := os.OpenFile(in, os.O_RDONLY, 0644)
-	if err != nil {
-		err = fmt.Errorf("file '%s' open error: %w", in, err)
-	}
-	dst, err := os.OpenFile(out, os.O_CREATE|os.O_RDWR, 0644)
-	if err != nil {
-		err = fmt.Errorf("file '%s' open error: %w", in, err)
-	}
-	_, err = io.Copy(dst, src)
-	if err != nil {
-		err = fmt.Errorf("file copy error: %w", err)
-		return err
-	}
-	return os.Remove(in)
 }
