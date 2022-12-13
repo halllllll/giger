@@ -34,7 +34,6 @@ func readActionLogCsv(fileName string) ([][]interface{}, error) {
 		done <- true
 	}()
 	var csvRows [][]interface{}
-	fmt.Println("let's goooo")
 	for {
 		select {
 		case v := <-c:
@@ -85,10 +84,12 @@ func moveFile(in string, out string) error {
 	src, err := os.OpenFile(in, os.O_RDONLY, 0644)
 	if err != nil {
 		err = fmt.Errorf("file '%s' open error: %w", in, err)
+		return err
 	}
 	dst, err := os.OpenFile(out, os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		err = fmt.Errorf("file '%s' open error: %w", in, err)
+		return err
 	}
 	_, err = io.Copy(dst, src)
 	if err != nil {

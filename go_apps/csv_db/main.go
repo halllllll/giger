@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
 	"strings"
 
@@ -40,7 +39,7 @@ func watch(targetPath string) error {
 				golog.ErrLog.Println("event error")
 				continue
 			}
-			log.Println("event:", event)
+			golog.InfoLog.Println("event:", event)
 			if event.Has(fsnotify.Create) {
 				golog.InfoLog.Println("modified file:", event.Name)
 				// ファイル名で分ける
@@ -48,8 +47,7 @@ func watch(targetPath string) error {
 				kindOfFile := strings.Split(fileName, "_")[0]
 				switch csvType(kindOfFile) {
 				case ACTIONLOG:
-					fmt.Printf("get action log csv, ここでDBに保存\n")
-
+					golog.InfoLog.Println("start process - action log save")
 					rows, err := readActionLogCsv(event.Name)
 					if err != nil {
 						golog.ErrLog.Println(err)
@@ -57,21 +55,18 @@ func watch(targetPath string) error {
 					if err := flowActionCsvToDB(rows); err != nil {
 						golog.ErrLog.Println(err)
 					}
-					fmt.Println("うまくいっとるやないか")
+					golog.InfoLog.Println("action log save - process done")
 
 				case USERS:
-					fmt.Printf("get user csv, DBに保存\n")
-					fmt.Println("テーブルごと作り直す")
-
+					golog.InfoLog.Println("start process - user log save")
 					rows, err := readUsersCsv(event.Name)
 					if err != nil {
 						golog.ErrLog.Println(err)
 					}
-					fmt.Printf("一行の長さが知りたいな %d\n", len(rows[0]))
-					fmt.Println(rows[0])
 					if err := flowUsersCsvToDB(rows); err != nil {
 						golog.ErrLog.Println(err)
 					}
+					golog.InfoLog.Println("user log save - process done")
 
 				default:
 					golog.InfoLog.Printf("UNKNOWN KIND OF FILE NAME: %s\n", kindOfFile)
@@ -81,7 +76,7 @@ func watch(targetPath string) error {
 				outFilePath := filepath.Join(saveFolderName, fileName)
 				fmt.Printf("save path: %s\n", outFilePath)
 				if err := moveFile(event.Name, outFilePath); err != nil {
-					log.Println("error: ", err)
+					golog.ErrLog.Println(err)
 				}
 			}
 		case err, ok := <-watcher.Errors:
@@ -99,6 +94,7 @@ func main() {
 	fmt.Println("監視開始")
 
 	if err := watch(watchFolderName); err != nil {
+		golog.ErrLog.Println(err)
 		panic(err)
 	}
 }

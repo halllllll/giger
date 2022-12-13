@@ -5,6 +5,7 @@ import (
 	"embed"
 	"fmt"
 
+	"github.com/halllllll/golog"
 	"github.com/jackc/pgx/v4"
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
@@ -184,7 +185,7 @@ func flowActionCsvToDB(rows [][]interface{}) error {
 		err := fmt.Errorf("copy csv error: %w", err)
 		return err
 	}
-	fmt.Println(rowCounts)
+	golog.InfoLog.Printf("result row count: %d\n", rowCounts)
 	if err := txn.Commit(ctx); err != nil {
 		err := fmt.Errorf("transaction error: %w", err)
 		return err
@@ -218,7 +219,7 @@ func flowUsersCsvToDB(rows [][]interface{}) error {
 		err := fmt.Errorf("copy csv error: %w", err)
 		return err
 	}
-	fmt.Println(rowCounts)
+	golog.InfoLog.Printf("result row count: %d\n", rowCounts)
 	if err := txn.Commit(ctx); err != nil {
 		err := fmt.Errorf("transaction error: %w", err)
 		return err
