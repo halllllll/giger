@@ -52,7 +52,14 @@ func watch(targetPath string) error {
 					if err != nil {
 						golog.ErrLog.Println(err)
 					}
-					if err := flowActionCsvToDB(rows); err != nil {
+					// 末尾の行が空なので狂うことがある
+					var result [][]interface{}
+					for _, row := range rows {
+						if len(row) != 0 {
+							result = append(result, row)
+						}
+					}
+					if err := flowActionCsvToDB(result); err != nil {
 						golog.ErrLog.Println(err)
 					}
 					golog.InfoLog.Println("action log save - process done")
@@ -63,7 +70,14 @@ func watch(targetPath string) error {
 					if err != nil {
 						golog.ErrLog.Println(err)
 					}
-					if err := flowUsersCsvToDB(rows); err != nil {
+					// 末尾の行が空なので狂うことがある
+					var result [][]interface{}
+					for _, row := range rows {
+						if len(row) != 0 || row[0] != ""{
+							result = append(result, row)
+						}
+					}
+					if err := flowUsersCsvToDB(result); err != nil {
 						golog.ErrLog.Println(err)
 					}
 					golog.InfoLog.Println("user log save - process done")

@@ -34,111 +34,111 @@ CREATE TABLE IF NOT EXISTS lgate_users(
     term_name1 VARCHAR(100),
     class_name1 VARCHAR(100),
     class_role1 VARCHAR(100),
-    class_number1 SMALLINT,
+    class_number1 VARCHAR(100),
 
     term_name2 VARCHAR(100),
     class_name2 VARCHAR(100),
     class_role2 VARCHAR(100),
-    class_number2 SMALLINT,
+    class_number2 VARCHAR(100),
 
     term_name3 VARCHAR(100),
     class_name3 VARCHAR(100),
     class_role3 VARCHAR(100),
-    class_number3 SMALLINT,
+    class_number3 VARCHAR(100),
 
     term_name4 VARCHAR(100),
     class_name4 VARCHAR(100),
     class_role4 VARCHAR(100),
-    class_number4 SMALLINT,
+    class_number4 VARCHAR(100),
 
     term_name5 VARCHAR(100),
     class_name5 VARCHAR(100),
     class_role5 VARCHAR(100),
-    class_number5 SMALLINT,
+    class_number5 VARCHAR(100),
 
     term_name6 VARCHAR(100),
     class_name6 VARCHAR(100),
     class_role6 VARCHAR(100),
-    class_number6 SMALLINT,
+    class_number6 VARCHAR(100),
 
     term_name7 VARCHAR(100),
     class_name7 VARCHAR(100),
     class_role7 VARCHAR(100),
-    class_number7 SMALLINT,
+    class_number7 VARCHAR(100),
 
     term_name8 VARCHAR(100),
     class_name8 VARCHAR(100),
     class_role8 VARCHAR(100),
-    class_number8 SMALLINT,
+    class_number8 VARCHAR(100),
 
     term_name9 VARCHAR(100),
     class_name9 VARCHAR(100),
     class_role9 VARCHAR(100),
-    class_number9 SMALLINT,
+    class_number9 VARCHAR(100),
 
     term_name10 VARCHAR(100),
     class_name10 VARCHAR(100),
     class_role10 VARCHAR(100),
-    class_number10 SMALLINT,
+    class_number10 VARCHAR(100),
 
     term_name11 VARCHAR(100),
     class_name11 VARCHAR(100),
     class_role11 VARCHAR(100),
-    class_number11 SMALLINT,
+    class_number11 VARCHAR(100),
 
     term_name12 VARCHAR(100),
     class_name12 VARCHAR(100),
     class_role12 VARCHAR(100),
-    class_number12 SMALLINT,
+    class_number12 VARCHAR(100),
 
     term_name13 VARCHAR(100),
     class_name13 VARCHAR(100),
     class_role13 VARCHAR(100),
-    class_number13 SMALLINT,
+    class_number13 VARCHAR(100),
 
     term_name14 VARCHAR(100),
     class_name14 VARCHAR(100),
     class_role14 VARCHAR(100),
-    class_number14 SMALLINT,
+    class_number14 VARCHAR(100),
 
     term_name15 VARCHAR(100),
     class_name15 VARCHAR(100),
     class_role15 VARCHAR(100),
-    class_number15 SMALLINT,
+    class_number15 VARCHAR(100),
 
     term_name16 VARCHAR(100),
     class_name16 VARCHAR(100),
     class_role16 VARCHAR(100),
-    class_number16 SMALLINT,
+    class_number16 VARCHAR(100),
 
     term_name17 VARCHAR(100),
     class_name17 VARCHAR(100),
     class_role17 VARCHAR(100),
-    class_number17 SMALLINT,
+    class_number17 VARCHAR(100),
 
     term_name18 VARCHAR(100),
     class_name18 VARCHAR(100),
     class_role18 VARCHAR(100),
-    class_number18 SMALLINT,
+    class_number18 VARCHAR(100),
 
     term_name19 VARCHAR(100),
     class_name19 VARCHAR(100),
     class_role19 VARCHAR(100),
-    class_number19 SMALLINT,
+    class_number19 VARCHAR(100),
 
     term_name20 VARCHAR(100),
     class_name20 VARCHAR(100),
     class_role20 VARCHAR(100),
-    class_number20 SMALLINT,
+    class_number20 VARCHAR(100),
 
     term_name21 VARCHAR(100),
     class_name21 VARCHAR(100),
     class_role21 VARCHAR(100),
-    class_number21 SMALLINT,
+    class_number21 VARCHAR(100),
 
     term_name22 VARCHAR(100),
     class_name22 VARCHAR(100),
     class_role22 VARCHAR(100),
-    class_number22 SMALLINT
+    class_number22 VARCHAR(100)
 
 );
