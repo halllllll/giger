@@ -19,7 +19,7 @@ services:
       - "apps-share-data:/go/src/app/csvs"
     working_dir: /go/src/app
     depends_on:
-      - db
+      - giger-db
     tty: true
     stdin_open: true
   go_csv_db:
@@ -32,7 +32,7 @@ services:
       - "apps-share-data:/go/src/app/sharedCsvs"
     working_dir: /go/src/app
     depends_on:
-      - db
+      - giger-db
     tty: true
     stdin_open: true
   metabase:
@@ -43,15 +43,15 @@ services:
     environment:
       # MB_DB_FILE: /metabase-data/metabase.db
       MB_DB_TYPE: postgres
-      MB_DB_DBNAME: giger
+      MB_DB_DBNAME: giger_metabase
       MB_DB_PORT: 5432
       MB_DB_USER_FILE: /run/secrets/db_user
       MB_DB_PASS_FILE: /run/secrets/db_password
-      MB_DB_HOST: db
+      MB_DB_HOST: giger-db
     ports:
       - "4649:3000"
     depends_on:
-      - db
+      - giger-db
     platform: linux/amd64
     restart: "always"
     secrets:
@@ -59,7 +59,7 @@ services:
       - db_user
 
     
-  db:
+  giger-db:
     image: postgres:15.1-alpine
     container_name: "giger-postgres"
     restart: "always"

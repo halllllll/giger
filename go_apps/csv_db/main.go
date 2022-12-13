@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"path/filepath"
@@ -9,8 +8,6 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/halllllll/golog"
-	"github.com/jackc/pgx/v4"
-	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
 var (
@@ -26,20 +23,6 @@ const (
 )
 
 func watch(targetPath string) error {
-	_ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	conn, err := pgx.Connect(context.Background(), fmt.Sprintf("postgres://%s:%s@%s:%s/%s", dbEnv.DbUser, dbEnv.DbPw, dbEnv.Host, dbEnv.DbPort, dbEnv.DbName))
-	if err != nil {
-		panic(err)
-	}
-
-	_txn, err := conn.Begin(_ctx)
-	if err != nil {
-		panic(err)
-	}
-	txn = &_txn
-	ctx = &_ctx
-
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return err
@@ -71,30 +54,31 @@ func watch(targetPath string) error {
 					if err != nil {
 						golog.ErrLog.Println(err)
 					}
-					if err := pourActionLog(rows, *txn, *ctx, string(LGATE_ACTIONLOG_TABLE)); err != nil {
+					if err := flowActionCsvToDB(rows); err != nil {
 						golog.ErrLog.Println(err)
 					}
-					// なぜか上記が失敗するのでここで直接やってみる
-					// golog.InfoLog.Printf("here is ActionLog Method!!!!!! table name: %s\n", string(LGATE_ACTIONLOG_TABLE))
-					// _, err = txn.CopyFrom(ctx, pgx.Identifier{string(LGATE_ACTIONLOG_TABLE)}, []string{"created_at", "lgate_action", "user_name", "family_name", "given_name", "school_class_name", "school_name", "remote_address", "content_name"}, pgx.CopyFromRows(rows))
-
-					if err != nil {
-						err := fmt.Errorf("actin log csv pouring db error: %w", err)
-						return err
-					}
-					if err := _txn.Commit(*ctx); err != nil {
-						err := fmt.Errorf("transaction error: %w", err)
-						return err
-					}
-					return nil
+					fmt.Println("うまくいっとるやないか")
 
 				case USERS:
 					fmt.Printf("get user csv, DBに保存\n")
+					fmt.Println("テーブルごと作り直す")
+
+					rows, err := readUsersCsv(event.Name)
+					if err != nil {
+						golog.ErrLog.Println(err)
+					}
+					fmt.Printf("一行の長さが知りたいな %d\n", len(rows[0]))
+					fmt.Println(rows[0])
+					if err := flowUsersCsvToDB(rows); err != nil {
+						golog.ErrLog.Println(err)
+					}
+
 				default:
 					golog.InfoLog.Printf("UNKNOWN KIND OF FILE NAME: %s\n", kindOfFile)
 				}
+				_, fileName = filepath.Split(event.Name)
 
-				outFilePath := filepath.Join(saveFolderName, event.Name)
+				outFilePath := filepath.Join(saveFolderName, fileName)
 				fmt.Printf("save path: %s\n", outFilePath)
 				if err := moveFile(event.Name, outFilePath); err != nil {
 					log.Println("error: ", err)

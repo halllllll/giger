@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io/fs"
@@ -9,7 +8,6 @@ import (
 	"time"
 
 	"github.com/halllllll/golog"
-	"github.com/jackc/pgx/v4"
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
@@ -30,8 +28,6 @@ func initFolder(folder string, mode fs.FileMode) error {
 }
 
 var dbEnv *EnvJson
-var ctx *context.Context
-var txn *pgx.Tx
 
 func initDatabaseInfo() {
 	envData, err := Env.ReadFile("secret.json")
@@ -42,19 +38,6 @@ func initDatabaseInfo() {
 	if err = json.Unmarshal(envData, &dbEnv); err != nil {
 		panic(err)
 	}
-	_ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	conn, err := pgx.Connect(context.Background(), fmt.Sprintf("postgres://%s:%s@%s:%s/%s", dbEnv.DbUser, dbEnv.DbPw, dbEnv.Host, dbEnv.DbPort, dbEnv.DbName))
-	if err != nil {
-		panic(err)
-	}
-
-	_txn, err := conn.Begin(_ctx)
-	if err != nil {
-		panic(err)
-	}
-	txn = &_txn
-	ctx = &_ctx
 }
 
 func init() {

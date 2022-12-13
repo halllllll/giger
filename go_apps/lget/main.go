@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/halllllll/golog"
 	"github.com/halllllll/lget"
 	"github.com/spf13/viper"
 )
@@ -158,7 +159,8 @@ func runGetAllLog(loginInfo *lget.LoginInfo, result chan actionLogData) {
 
 		opened_l_get, err := l_get.Login(loginInfo)
 		if err != nil {
-			panic(err)
+				fmt.Println("時間を置いて再チャレンジしたい")
+				panic(err)
 		}
 
 		// ex 2022-08-21 10:00:00 -> 1661043600
@@ -231,14 +233,15 @@ func main() {
 	// 開始時間設定
 
 	readyAction := time.Date(2022, time.December, 4, 14, 20, 0, 0, time.Local)
-
+	golog.InfoLog.Printf("wait ready at: %s\n", readyAction)
 	<-time.After(time.Until(readyAction))
+	golog.InfoLog.Println("start")
 
 	// ユーザーデータ取得用ゴルーチン
 	userResult := make(chan []byte)
 	usersDataCsvPath := filepath.Join(cd, userDataFolderName)
 	// インターバル指定して無限に取得開始
-	go runGetUser(loginInfo, time.Minute*30, userResult)
+	go runGetUser(loginInfo, time.Hour*8, userResult)
 
 	// ユーザー履歴取得用ゴルーチン
 	userLogResult := make(chan actionLogData)
