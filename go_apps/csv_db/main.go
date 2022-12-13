@@ -55,7 +55,7 @@ func watch(targetPath string) error {
 					// 末尾の行が空なので狂うことがある
 					var result [][]interface{}
 					for _, row := range rows {
-						if len(row) != 0 {
+						if len(row) != 0 && row[0] == ""{
 							result = append(result, row)
 						}
 					}
@@ -73,7 +73,7 @@ func watch(targetPath string) error {
 					// 末尾の行が空なので狂うことがある
 					var result [][]interface{}
 					for _, row := range rows {
-						if len(row) != 0 || row[0] != ""{
+						if len(row) != 0 && row[0] != ""{
 							result = append(result, row)
 						}
 					}
