@@ -55,7 +55,8 @@ func watch(targetPath string) error {
 					// 末尾の行が空なので狂うことがある
 					var result [][]interface{}
 					for _, row := range rows {
-						if len(row) != 0 && row[0] != "" {
+						// 先頭3つが空文字でないというのはただのワークアラウンドです
+						if len(row) >= 2 && row[0] != "" && row[1] != "" && row[2] != "" {
 							result = append(result, row)
 						}
 					}
