@@ -3,19 +3,21 @@ SET CLIENT_ENCODING = 'UTF8';
 CREATE DATABASE giger_metabase
     ENCODING 'UTF8';
 
-
+-- いちおう複合キーをつけとく
 CREATE TABLE IF NOT EXISTS lgate_actionlog (
     created_at TIMESTAMP NOT NULL,
     action VARCHAR(100) NOT NULL,
     user_name VARCHAR(100) NOT NULL,
-    family_name VARCHAR(100) NOT NULL,
-    given_name VARCHAR(100) NOT NULL,
+    family_name VARCHAR(100),
+    given_name VARCHAR(100),
     school_class_name VARCHAR(100),
     school_name VARCHAR(100) NOT NULL,
     remote_address VARCHAR(100) NOT NULL,
-    content_name VARCHAR(100)
+    content_name VARCHAR(100),
+    PRIMARY KEY(created_at, user_name, remote_address)
 );
 
+-- ユーザーデータはログを取る必要がないので、取得したらまるっとDELETEして更新する
 CREATE TABLE IF NOT EXISTS lgate_users(
     user_name VARCHAR(100) NOT NULL,
     password VARCHAR(100),
