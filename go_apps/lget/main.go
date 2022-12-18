@@ -96,7 +96,7 @@ func init() {
 	}
 }
 
-func runGetUser(loginInfo *lget.LoginInfo, interval time.Duration, result chan []byte) {
+func runGetUser(loginInfo *lget.LoginInfo, result chan []byte) {
 	for {
 		start := time.Now()
 		// まずログインを済ませる
@@ -120,17 +120,10 @@ func runGetUser(loginInfo *lget.LoginInfo, interval time.Duration, result chan [
 		}
 		result <- rawData
 
-		end := time.Now()
-
-		execDif := end.Sub(start)
-		if execDif < interval {
-			dif := interval - execDif
-			next := end.Add(time.Duration(dif.Seconds()) * time.Second).Format("2006/01/02/15:04:05")
-			fmt.Printf("sleep until %s\n", next)
-			time.Sleep(dif)
-		} else {
-			fmt.Printf("omg!! over time... duration: %d\n gogogo start now!\n", execDif-interval)
-		}
+		// 翌日の24時まで眠る
+		nex := time.Date(start.Year(), start.Month(), start.Day()+1, 0, 0, 0, 0, time.Local)
+		golog.InfoLog.Printf("sleep until %s Zzz...\n", nex)
+		<-time.After(time.Until(nex))
 	}
 }
 
@@ -159,8 +152,8 @@ func runGetAllLog(loginInfo *lget.LoginInfo, result chan actionLogData) {
 
 		opened_l_get, err := l_get.Login(loginInfo)
 		if err != nil {
-				fmt.Println("時間を置いて再チャレンジしたい")
-				panic(err)
+			fmt.Println("時間を置いて再チャレンジしたい")
+			panic(err)
 		}
 
 		// ex 2022-08-21 10:00:00 -> 1661043600
@@ -240,8 +233,8 @@ func main() {
 	// ユーザーデータ取得用ゴルーチン
 	userResult := make(chan []byte)
 	usersDataCsvPath := filepath.Join(cd, userDataFolderName)
-	// インターバル指定して無限に取得開始
-	go runGetUser(loginInfo, time.Hour*8, userResult)
+	//
+	go runGetUser(loginInfo, userResult)
 
 	// ユーザー履歴取得用ゴルーチン
 	userLogResult := make(chan actionLogData)

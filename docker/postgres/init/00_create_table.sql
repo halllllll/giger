@@ -4,6 +4,7 @@ CREATE DATABASE giger_metabase
     ENCODING 'UTF8';
 
 -- いちおう複合キーをつけとく
+-- ただし同一csvファイル内でレコードが重複することがあるので、それはアプリ側ではじく
 CREATE TABLE IF NOT EXISTS lgate_actionlog (
     created_at TIMESTAMP NOT NULL,
     action VARCHAR(100) NOT NULL,
